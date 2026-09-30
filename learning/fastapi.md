@@ -3,19 +3,19 @@
 ## 1. What is it?
 
 FastAPI is a modern, **open‑source** web‑framework for building **APIs** (Application Programming Interfaces) in **Python**.  
-It lets you define the shape of the data your endpoints return or receive, and it automatically generates **OpenAPI** documentation and **interactive API docs** (like Swagger UI).  
+it lets you define the shape of the data your endpoints return or receive, and it automatically generates **OpenAPI** documentation and **interactive API docs** (like Swagger UI).
 
-Think of it as a “recipe book” for your web services: you write a simple description of what each endpoint does, and FastAPI handles the heavy lifting—parsing request bodies, validating data, converting types, and even generating client code.  
+Think of it as a “recipe book” for your web services: you write a simple description of what each endpoint does, and FastAPI handles the heavy lifting—parsing request bodies, validating data, converting types, and even generating client code.
 
 Key characteristics:
 
-| Feature | What it means for you |
-|---------|-----------------------|
-| **Fast** | Built on **Starlette** and **Pydantic**, it’s one of the fastest Python web frameworks available. |
-| **Automatic validation** | Uses **type hints** to validate incoming data, reducing bugs. |
-| **Interactive docs** | You get a live, searchable UI where you can test endpoints without writing extra code. |
-| **Production‑ready** | Supports async/await, middleware, dependency injection, and more. |
-| **Pythonic** | Leverages native Python features (type hints, dataclasses, etc.) rather than requiring extra configuration. |
+| Feature                  | What it means for you                                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| **Fast**                 | Built on **Starlette** and **Pydantic**, it’s one of the fastest Python web frameworks available.           |
+| **Automatic validation** | Uses **type hints** to validate incoming data, reducing bugs.                                               |
+| **Interactive docs**     | You get a live, searchable UI where you can test endpoints without writing extra code.                      |
+| **Production‑ready**     | Supports async/await, middleware, dependency injection, and more.                                           |
+| **Pythonic**             | Leverages native Python features (type hints, dataclasses, etc.) rather than requiring extra configuration. |
 
 ## 2. Why does it matter?
 
@@ -38,18 +38,19 @@ FastAPI works in three high‑level stages:
 3. **Generate responses automatically**  
    The function returns a Python object (dict, list, Pydantic model, etc.) and FastAPI serializes it to JSON. It also builds an **OpenAPI** spec that powers the interactive docs.
 
-**Under the hood**:  
-- **Starlette** handles the low‑level HTTP protocol, routing, and middleware.  
-- **Pydantic** performs data validation and conversion.  
+**Under the hood**:
+
+- **Starlette** handles the low‑level HTTP protocol, routing, and middleware.
+- **Pydantic** performs data validation and conversion.
 - **FastAPI** glues them together, adds dependency injection, and writes the OpenAPI schema.
 
 ## 4. Practical Example
 
 Below is a tiny but complete FastAPI service that manages a list of “items”. It demonstrates:
 
-- A **GET** endpoint returning all items.  
-- A **POST** endpoint that validates a request body.  
-- **Dependency injection** to simulate a database session.  
+- A **GET** endpoint returning all items.
+- A **POST** endpoint that validates a request body.
+- **Dependency injection** to simulate a database session.
 
 ```python
 # main.py
@@ -127,26 +128,26 @@ def create_item(item: ItemCreate, db: Session = Depends(get_db)):
 
 ### What you see
 
-| Section | Purpose |
-|---------|---------|
-| **Database models** (`ItemDB`) | SQLAlchemy ORM representing the persistent storage. |
-| **Pydantic models** (`ItemCreate`, `Item`) | Define the **shape** of request bodies and API responses. |
-| **Dependency** (`get_db`) | Supplies a DB session to each endpoint without repeating code. |
-| **Endpoints** (`/items/`) | Simple, type‑annotated functions that automatically get validation, documentation, and OpenAPI generation. |
+| Section                                    | Purpose                                                                                                    |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| **Database models** (`ItemDB`)             | SQLAlchemy ORM representing the persistent storage.                                                        |
+| **Pydantic models** (`ItemCreate`, `Item`) | Define the **shape** of request bodies and API responses.                                                  |
+| **Dependency** (`get_db`)                  | Supplies a DB session to each endpoint without repeating code.                                             |
+| **Endpoints** (`/items/`)                  | Simple, type‑annotated functions that automatically get validation, documentation, and OpenAPI generation. |
 
 When you run `uvicorn main:app --reload` and open `http://127.0.0.1:8000/docs`, you’ll see an interactive UI where you can test both endpoints, see request/response examples, and even try out the API with a live “Try it out” button.
 
 ## 5. Common Mistakes
 
-| Mistake | Why it hurts | How to avoid it |
-|---------|--------------|-----------------|
-| **Ignoring response models** | FastAPI will still work, but you lose automatic validation, OpenAPI docs, and client code generation. | Always add `response_model=` to `@app.get/@app.post` (or use Pydantic models as return types). |
-| **Mixing `Dict` and Pydantic models** | Pydantic’s validation is lost; you may get `Dict` instead of a clean object. | Prefer Pydantic models for request/response bodies; wrap dicts in a model if you must. |
-| **Forgetting to close DB sessions** | Connection leaks lead to “too many open files” errors in production. | Use a dependency that yields a session (`try…finally` or context manager). |
-| **Using mutable default arguments** (e.g., `def foo(items: List[str] = [])` ) | FastAPI evaluates defaults once, causing surprising shared state across requests. | Use `None` as default and create a new list inside the function: `def foo(items: Optional[List[str]] = None)`. |
-| **Over‑relying on `jsonable_encoder`** | It’s handy for non‑Pydantic objects, but it can hide type errors. | Keep data in Pydantic models whenever possible; only fall back to `jsonable_encoder` for complex legacy objects. |
-| **Not handling exceptions** | FastAPI will turn unhandled exceptions into 500 errors without helpful messages. | Define custom exception handlers (`@app.exception_handler(...)`) or use `HTTPException` for expected errors. |
-| **Writing blocking code in async endpoints** | Even though FastAPI supports async, CPU‑bound work blocks the event loop. | Use `asyncio.to_thread` or offload to a process pool for heavy computation. |
+| Mistake                                                                       | Why it hurts                                                                                          | How to avoid it                                                                                                  |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Ignoring response models**                                                  | FastAPI will still work, but you lose automatic validation, OpenAPI docs, and client code generation. | Always add `response_model=` to `@app.get/@app.post` (or use Pydantic models as return types).                   |
+| **Mixing `Dict` and Pydantic models**                                         | Pydantic’s validation is lost; you may get `Dict` instead of a clean object.                          | Prefer Pydantic models for request/response bodies; wrap dicts in a model if you must.                           |
+| **Forgetting to close DB sessions**                                           | Connection leaks lead to “too many open files” errors in production.                                  | Use a dependency that yields a session (`try…finally` or context manager).                                       |
+| **Using mutable default arguments** (e.g., `def foo(items: List[str] = [])` ) | FastAPI evaluates defaults once, causing surprising shared state across requests.                     | Use `None` as default and create a new list inside the function: `def foo(items: Optional[List[str]] = None)`.   |
+| **Over‑relying on `jsonable_encoder`**                                        | It’s handy for non‑Pydantic objects, but it can hide type errors.                                     | Keep data in Pydantic models whenever possible; only fall back to `jsonable_encoder` for complex legacy objects. |
+| **Not handling exceptions**                                                   | FastAPI will turn unhandled exceptions into 500 errors without helpful messages.                      | Define custom exception handlers (`@app.exception_handler(...)`) or use `HTTPException` for expected errors.     |
+| **Writing blocking code in async endpoints**                                  | Even though FastAPI supports async, CPU‑bound work blocks the event loop.                             | Use `asyncio.to_thread` or offload to a process pool for heavy computation.                                      |
 
 ## 6. Engineering Insight
 
@@ -163,32 +164,35 @@ When you run `uvicorn main:app --reload` and open `http://127.0.0.1:8000/docs`, 
 ## 7. Practice
 
 ### Beginner
-1. **Create a new FastAPI app** that has a single GET endpoint `/hello/` which returns `{"message": "world"}`.  
-2. Add an OpenAPI documentation view and verify it appears at `/docs`.  
+
+1. **Create a new FastAPI app** that has a single GET endpoint `/hello/` which returns `{"message": "world"}`.
+2. Add an OpenAPI documentation view and verify it appears at `/docs`.
 3. Run the app with `uvicorn` and test the endpoint using `curl` or the browser.
 
 ### Intermediate
-1. Define a Pydantic model `Book` with fields `title: str`, `author: str`, `pages: int`.  
-2. Implement a POST endpoint `/books/` that accepts a `Book` object, stores it in a **list** (in‑memory), and returns the same object with an auto‑generated `id: int`.  
-3. Add a GET endpoint `/books/{book_id}` that retrieves a single book by its `id`.  
+
+1. Define a Pydantic model `Book` with fields `title: str`, `author: str`, `pages: int`.
+2. Implement a POST endpoint `/books/` that accepts a `Book` object, stores it in a **list** (in‑memory), and returns the same object with an auto‑generated `id: int`.
+3. Add a GET endpoint `/books/{book_id}` that retrieves a single book by its `id`.
 4. Ensure both endpoints have proper response models and produce correct OpenAPI schemas.
 
 ### Challenge
-1. Build a **todo list API** with CRUD operations (create, read all, read one, update, delete).  
-2. Use **SQLAlchemy** with an SQLite database (as shown above) for persistence.  
-3. Implement **dependency injection** for authentication: a simple API key header `X-API-Key` that must equal `"secret"`. If missing or wrong, raise an `HTTPException` with a 401 status.  
-4. Add **error handling** for “not found” cases (return 404 with a JSON body like `{"detail": "Todo not found"}`).  
-5. Write **pytest** tests for each endpoint using `TestClient`.  
+
+1. Build a **todo list API** with CRUD operations (create, read all, read one, update, delete).
+2. Use **SQLAlchemy** with an SQLite database (as shown above) for persistence.
+3. Implement **dependency injection** for authentication: a simple API key header `X-API-Key` that must equal `"secret"`. If missing or wrong, raise an `HTTPException` with a 401 status.
+4. Add **error handling** for “not found” cases (return 404 with a JSON body like `{"detail": "Todo not found"}`).
+5. Write **pytest** tests for each endpoint using `TestClient`.
 6. Finally, generate the OpenAPI spec (`/openapi.json`) and verify that the API key header is documented.
 
 ## 8. Key Takeaways
 
-- **FastAPI = Fast + API**: It’s a high‑performance, type‑aware framework that reduces boilerplate.  
-- **Type hints → Validation**: Use Python’s type hints (or Pydantic models) to describe request/response shapes; FastAPI validates automatically.  
-- **Interactive docs**: OpenAPI (Swagger UI) is generated for free, making testing and client generation trivial.  
-- **Dependency injection** lets you share resources (DB sessions, auth) across endpoints cleanly.  
-- **Async support**: Write async endpoints and use async DB drivers for better concurrency.  
-- **Testing**: Use `TestClient` and `pytest` to verify behavior without running a server.  
-- **Avoid common pitfalls**: always define response models, handle exceptions, close resources, and avoid mutable defaults.  
+- **FastAPI = Fast + API**: It’s a high‑performance, type‑aware framework that reduces boilerplate.
+- **Type hints → Validation**: Use Python’s type hints (or Pydantic models) to describe request/response shapes; FastAPI validates automatically.
+- **Interactive docs**: OpenAPI (Swagger UI) is generated for free, making testing and client generation trivial.
+- **Dependency injection** lets you share resources (DB sessions, auth) across endpoints cleanly.
+- **Async support**: Write async endpoints and use async DB drivers for better concurrency.
+- **Testing**: Use `TestClient` and `pytest` to verify behavior without running a server.
+- **Avoid common pitfalls**: always define response models, handle exceptions, close resources, and avoid mutable defaults.
 
 Mastering these concepts will give you a solid foundation for building robust, well‑documented APIs in Python and prepare you for more advanced topics like **GraphQL**, **microservices**, and **serverless** deployments. Happy coding!
